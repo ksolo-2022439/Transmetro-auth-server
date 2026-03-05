@@ -9,4 +9,6 @@ public interface IAuthService
 
     /// Autentica a un usuario verificando su CUI y contraseña encriptada.
     Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
+    Task<string> RequestPasswordResetAsync(PasswordRecoveryDto request);
+    Task ResetPasswordAsync(PasswordResetDto request);
 }

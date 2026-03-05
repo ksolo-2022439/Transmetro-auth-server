@@ -41,4 +41,34 @@ public class AuthController(IAuthService authService) : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// Expone el endpoint para solicitar el restablecimiento de contraseña enviando el correo electrónico del usuario.
+    [HttpPost("recover-password")]
+    public async Task<IActionResult> RecoverPassword([FromBody] PasswordRecoveryDto request)
+    {
+        try
+        {
+            var token = await authService.RequestPasswordResetAsync(request);
+            return Ok(new { message = "Token generado exitosamente.", token });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// Expone el endpoint para confirmar el restablecimiento validando el token y asignando la nueva contraseña.
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] PasswordResetDto request)
+    {
+        try
+        {
+            await authService.ResetPasswordAsync(request);
+            return Ok(new { message = "Contraseña actualizada exitosamente." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

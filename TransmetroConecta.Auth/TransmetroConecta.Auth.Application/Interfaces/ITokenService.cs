@@ -6,4 +6,6 @@ public interface ITokenService
 {
     /// Genera un token JWT para el usuario proporcionado.
     string GenerateToken(User user);
+    string GeneratePasswordResetToken(User user);
+    bool ValidatePasswordResetToken(string token, string email);
 }

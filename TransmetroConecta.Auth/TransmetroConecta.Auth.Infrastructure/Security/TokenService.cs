@@ -34,4 +34,62 @@ public class TokenService(IConfiguration configuration) : ITokenService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    /// Genera un token JWT de 15 minutos exclusivo para el proceso de restablecimiento de contraseña.
+    public string GeneratePasswordResetToken(User user)
+    {
+        var secret = configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Falta Jwt:Secret");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("Purpose", "PasswordReset")
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: configuration["Jwt:Issuer"],
+            audience: configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(15),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// Valida la firma, expiración y propósito del token temporal proporcionado para la recuperación.
+    public bool ValidatePasswordResetToken(string token, string email)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var secret = configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Falta Jwt:Secret");
+        var key = Encoding.UTF8.GetBytes(secret);
+
+        try
+        {
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidIssuer = configuration["Jwt:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = configuration["Jwt:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            }, out SecurityToken validatedToken);
+
+            var jwtToken = (JwtSecurityToken)validatedToken;
+            var tokenEmail = jwtToken.Claims.First(x => x.Type == ClaimTypes.Email).Value;
+            var purpose = jwtToken.Claims.First(x => x.Type == "Purpose").Value;
+
+            return tokenEmail == email && purpose == "PasswordReset";
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

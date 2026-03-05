@@ -57,4 +57,26 @@ public class AuthService(IUserRepository userRepository, ITokenService tokenServ
             Role = user.Role.ToString()
         };
     }
+
+    /// Verifica la existencia del usuario por correo electrónico y emite un token temporal de recuperación.
+    public async Task<string> RequestPasswordResetAsync(PasswordRecoveryDto request)
+    {
+        var user = await userRepository.GetByEmailAsync(request.Email);
+        if (user == null) throw new Exception("Usuario no encontrado.");
+        
+        return tokenService.GeneratePasswordResetToken(user);
+    }
+
+    /// Valida el token temporal y procesa la actualización de la contraseña encriptada en la base de datos.
+    public async Task ResetPasswordAsync(PasswordResetDto request)
+    {
+        var user = await userRepository.GetByEmailAsync(request.Email);
+        if (user == null) throw new Exception("Usuario no encontrado.");
+
+        if (!tokenService.ValidatePasswordResetToken(request.Token, request.Email))
+            throw new UnauthorizedAccessException("Token inválido o expirado.");
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        await userRepository.UpdateAsync(user);
+    }
 }
