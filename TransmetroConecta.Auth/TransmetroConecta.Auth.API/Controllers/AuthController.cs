@@ -8,7 +8,9 @@ namespace TransmetroConecta.Auth.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
+    /// <summary>
     // Procesa la solicitud HTTP para registrar un nuevo usuario en el sistema.
+    /// </summary>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
     {
@@ -23,7 +25,9 @@ public class AuthController(IAuthService authService) : ControllerBase
         }
     }
 
+    /// <summary>
     // Procesa la solicitud HTTP para autenticar un usuario y devolver su token JWT.
+    /// </summary>
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
@@ -42,7 +46,9 @@ public class AuthController(IAuthService authService) : ControllerBase
         }
     }
 
+    /// <summary>
     /// Expone el endpoint para solicitar el restablecimiento de contraseña enviando el correo electrónico del usuario.
+    /// </summary>
     [HttpPost("recover-password")]
     public async Task<IActionResult> RecoverPassword([FromBody] PasswordRecoveryDto request)
     {
@@ -57,7 +63,9 @@ public class AuthController(IAuthService authService) : ControllerBase
         }
     }
 
+    /// <summary>
     /// Expone el endpoint para confirmar el restablecimiento validando el token y asignando la nueva contraseña.
+    /// </summary>
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] PasswordResetDto request)
     {

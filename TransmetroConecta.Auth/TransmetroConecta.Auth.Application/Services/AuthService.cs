@@ -8,7 +8,9 @@ namespace TransmetroConecta.Auth.Application.Services;
 
 public class AuthService(IUserRepository userRepository, ITokenService tokenService) : IAuthService
 {
+    /// <summary>
     /// Registra un nuevo usuario validando la unicidad del CUI y correo electrónico.
+    /// </summary>
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
     {
         var existingUser = await userRepository.GetByCuiAsync(request.CUI);
@@ -38,7 +40,9 @@ public class AuthService(IUserRepository userRepository, ITokenService tokenServ
         };
     }
 
+    /// <summary>
     /// Autentica a un usuario verificando su CUI y contraseña encriptada.
+    /// </summary>
     public async Task<AuthResponseDto> LoginAsync(LoginRequestDto request)
     {
         var user = await userRepository.GetByCuiAsync(request.CUI);
@@ -58,7 +62,9 @@ public class AuthService(IUserRepository userRepository, ITokenService tokenServ
         };
     }
 
+    /// <summary>
     /// Verifica la existencia del usuario por correo electrónico y emite un token temporal de recuperación.
+    /// </summary>
     public async Task<string> RequestPasswordResetAsync(PasswordRecoveryDto request)
     {
         var user = await userRepository.GetByEmailAsync(request.Email);
@@ -67,7 +73,9 @@ public class AuthService(IUserRepository userRepository, ITokenService tokenServ
         return tokenService.GeneratePasswordResetToken(user);
     }
 
+    /// <summary>
     /// Valida el token temporal y procesa la actualización de la contraseña encriptada en la base de datos.
+    /// </summary>
     public async Task ResetPasswordAsync(PasswordResetDto request)
     {
         var user = await userRepository.GetByEmailAsync(request.Email);

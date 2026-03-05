@@ -7,7 +7,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<User> Users { get; set; }
 
+    /// <summary>
     // Configura el modelo de datos de la base de datos definiendo llaves primarias y restricciones únicas.
+    /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -7,32 +7,42 @@ namespace TransmetroConecta.Auth.Infrastructure.Repositories;
 
 public class UserRepository(AppDbContext context) : IUserRepository
 {
+    /// <summary>
     // Obtiene un usuario por su identificador único.
+    /// </summary>
     public async Task<User?> GetByIdAsync(Guid id)
     {
         return await context.Users.FindAsync(id);
     }
 
+    /// <summary>
     // Obtiene un usuario utilizando su CUI.
+    /// </summary>
     public async Task<User?> GetByCuiAsync(string cui)
     {
         return await context.Users.FirstOrDefaultAsync(u => u.CUI == cui);
     }
 
+    /// <summary>
     // Obtiene un usuario utilizando su dirección de correo electrónico.
+    /// </summary>
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
+    /// <summary>
     // Agrega un nuevo usuario a la base de datos.
+    /// </summary>
     public async Task AddAsync(User user)
     {
         await context.Users.AddAsync(user);
         await context.SaveChangesAsync();
     }
 
+    /// <summary>
     // Actualiza la información de un usuario existente.
+    /// </summary>
     public async Task UpdateAsync(User user)
     {
         context.Users.Update(user);

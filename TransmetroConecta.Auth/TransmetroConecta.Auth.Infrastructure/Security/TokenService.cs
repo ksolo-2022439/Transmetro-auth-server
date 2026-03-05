@@ -10,7 +10,9 @@ namespace TransmetroConecta.Auth.Infrastructure.Security;
 
 public class TokenService(IConfiguration configuration) : ITokenService
 {
+    /// <summary>
     // Genera un token JWT para el usuario proporcionado utilizando la clave secreta y la configuración de entorno.
+    /// </summary>
     public string GenerateToken(User user)
     {
         var secret = configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Falta Jwt:Secret en la configuración.");
@@ -35,7 +37,9 @@ public class TokenService(IConfiguration configuration) : ITokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    /// <summary>
     /// Genera un token JWT de 15 minutos exclusivo para el proceso de restablecimiento de contraseña.
+    /// </summary>
     public string GeneratePasswordResetToken(User user)
     {
         var secret = configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Falta Jwt:Secret");
@@ -60,7 +64,9 @@ public class TokenService(IConfiguration configuration) : ITokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    /// <summary>
     /// Valida la firma, expiración y propósito del token temporal proporcionado para la recuperación.
+    /// </summary>
     public bool ValidatePasswordResetToken(string token, string email)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
