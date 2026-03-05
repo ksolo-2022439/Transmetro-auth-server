@@ -1,0 +1,6 @@
+@TransmetroConecta.Auth.API_HostAddress = http://localhost:5286
+
+GET {{TransmetroConecta.Auth.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
