@@ -11,6 +11,10 @@ using TransmetroConecta.Auth.Infrastructure.Security;
 using TransmetroConecta.Auth.API.Extensions;
 using TransmetroConecta.Auth.API.Middlewares;
 using System.Reflection;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using TransmetroConecta.Auth.API.Filters;
+using TransmetroConecta.Auth.Application.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +35,14 @@ builder.Services.AddSwaggerGen(options =>
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilterAttribute>();
+});
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestDtoValidator>();
 
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret es nulo");
 var key = Encoding.UTF8.GetBytes(jwtSecret);
