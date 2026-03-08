@@ -11,7 +11,7 @@ public class WalletIntegrationService(HttpClient httpClient) : IWalletIntegratio
     public async Task<bool> InitializeWalletAsync(Guid userId)
     {
         var payload = new { UserId = userId, CourtesyTrips = 5, Balance = 0 };
-        var response = await httpClient.PostAsJsonAsync("/api/wallets/initialize", payload);
+        var response = await httpClient.PostAsJsonAsync("wallets/initialize", payload);
         return response.IsSuccessStatusCode;
     }
 
@@ -21,7 +21,7 @@ public class WalletIntegrationService(HttpClient httpClient) : IWalletIntegratio
     public async Task<bool> AddFundsAsync(Guid userId, decimal amount)
     {
         var payload = new { UserId = userId, Amount = amount };
-        var response = await httpClient.PostAsJsonAsync("/api/wallets/recharge", payload);
+        var response = await httpClient.PostAsJsonAsync("wallets/recharge", payload);
         return response.IsSuccessStatusCode;
     }
 }
