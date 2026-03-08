@@ -28,4 +28,10 @@ public interface IUserRepository
     /// Actualiza la información de un usuario existente.
     /// </summary>
     Task UpdateAsync(User user);
+
+    // Agrega este método a la interfaz existente
+    /// <summary>
+    /// Obtiene la lista completa de todos los usuarios registrados en el sistema.
+    /// </summary>
+    Task<IEnumerable<User>> GetAllAsync();
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TransmetroConecta.Auth.Application.DTOs;
@@ -11,25 +12,24 @@ namespace TransmetroConecta.Auth.API.Controllers;
 public class TransactionController(ITransactionService transactionService) : ControllerBase
 {
     /// <summary>
-    // Expone el endpoint protegido para procesar la recarga de saldo de la billetera virtual mediante una tarjeta.
+    /// Expone el endpoint protegido para procesar la recarga de saldo identificando al usuario mediante su token.
     /// </summary>
     [HttpPost("recharge")]
     public async Task<IActionResult> Recharge([FromBody] TransactionRequestDto request)
     {
-        try
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdClaim, out var userId))
         {
-            var result = await transactionService.ProcessPaymentAsync(request);
-            
-            if (!result.IsSuccess)
-            {
-                return BadRequest(result);
-            }
-            
-            return Ok(result);
+            return Unauthorized(new { message = "Token inválido o usuario no identificado." });
         }
-        catch (Exception)
+
+        var result = await transactionService.ProcessPaymentAsync(userId, request);
+        
+        if (!result.IsSuccess)
         {
-            return StatusCode(500, new { message = "Error interno al procesar la transacción." });
+            return BadRequest(result);
         }
+        
+        return Ok(result);
     }
 }

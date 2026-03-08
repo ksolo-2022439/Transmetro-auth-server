@@ -48,4 +48,12 @@ public class UserRepository(AppDbContext context) : IUserRepository
         context.Users.Update(user);
         await context.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Obtiene la lista completa de todos los usuarios registrados en el sistema utilizando Entity Framework.
+    /// </summary>
+    public async Task<IEnumerable<User>> GetAllAsync()
+    {
+        return await context.Users.ToListAsync();
+    }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TransmetroConecta.Auth.Application.DTOs;
 using TransmetroConecta.Auth.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TransmetroConecta.Auth.API.Controllers;
 
@@ -9,7 +10,7 @@ namespace TransmetroConecta.Auth.API.Controllers;
 public class AuthController(IAuthService authService) : ControllerBase
 {
     /// <summary>
-    // Procesa la solicitud HTTP para registrar un nuevo usuario en el sistema.
+    /// Procesa la solicitud HTTP para registrar un nuevo usuario en el sistema.
     /// </summary>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
@@ -26,7 +27,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     /// <summary>
-    // Procesa la solicitud HTTP para autenticar un usuario y devolver su token JWT.
+    /// Procesa la solicitud HTTP para autenticar un usuario y devolver su token JWT.
     /// </summary>
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
@@ -73,6 +74,42 @@ public class AuthController(IAuthService authService) : ControllerBase
         {
             await authService.ResetPasswordAsync(request);
             return Ok(new { message = "Contraseña actualizada exitosamente." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Obtiene el listado completo de usuarios registrados. Requiere privilegios de Administrador.
+    /// </summary>
+    [HttpGet("users")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        try
+        {
+            var users = await authService.GetAllUsersAsync();
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Crea un usuario con rol de administrador. Solo accesible mediante un token de administrador válido.
+    /// </summary>
+    [HttpPost("register-admin")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterRequestDto request)
+    {
+        try
+        {
+            var result = await authService.RegisterAdminAsync(request);
+            return Ok(result);
         }
         catch (Exception ex)
         {

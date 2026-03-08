@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # BASES DE DATOS
+  # ==========================================
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: transmetro_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: TransmetroAuthDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - transmetro_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongo-db:
+    image: mongo:6.0
+    container_name: transmetro_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - transmetro_network
+
+  # ==========================================
+  # MICROSERVICIOS
+  # ==========================================
+  auth-server:
+    build:
+      context: ./Transmetro-auth-server/TransmetroConecta.Auth
+      dockerfile: Dockerfile
+    container_name: transmetro_auth_server
+    ports:
+      - "8080:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=TransmetroAuthDb;Username=postgres;Password=postgres
+      - Jwt__Secret=A_SUPER_SECRET_KEY_FOR_TRANSMETRO_CONECTA_12345
+      - Jwt__Issuer=TransmetroAuthServer
+      - Jwt__Audience=TransmetroUsers
+      - WalletService__BaseUrl=http://server-client:3002
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - transmetro_network
+
+  server-admin:
+    build:
+      context: ./Transmetro-server-admin/server-admin
+      dockerfile: Dockerfile
+    container_name: transmetro_server_admin
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - URI_MONGODB=mongodb://mongo-db:27017/TransmetroAdminDb
+      - JWT_SECRET=A_SUPER_SECRET_KEY_FOR_TRANSMETRO_CONECTA_12345
+    depends_on:
+      - mongo-db
+    networks:
+      - transmetro_network
+
+  server-client:
+    build:
+      context: ./Transmetro-server-client/server-client
+      dockerfile: Dockerfile
+    container_name: transmetro_server_client
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - URI_MONGODB=mongodb://mongo-db:27017/TransmetroUserDb
+      - JWT_SECRET=A_SUPER_SECRET_KEY_FOR_TRANSMETRO_CONECTA_12345
+    depends_on:
+      - mongo-db
+    networks:
+      - transmetro_network
+
+volumes:
+  pgdata:
+  mongodata:
+
+networks:
+  transmetro_network:
+    driver: bridge

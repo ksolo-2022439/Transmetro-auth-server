@@ -3,24 +3,26 @@ using TransmetroConecta.Auth.Application.Interfaces;
 
 namespace TransmetroConecta.Auth.Application.Services;
 
-public class TransactionService : ITransactionService
+public class TransactionService(IWalletIntegrationService walletIntegrationService) : ITransactionService
 {
     /// <summary>
-    // Procesa una transacción simulada validando la tarjeta mediante el algoritmo de Luhn y retorna el resultado de la operación.
+    /// Procesa una transacción simulada validando la tarjeta mediante el algoritmo de Luhn y notifica la acreditación.
     /// </summary>
-    public async Task<TransactionResponseDto> ProcessPaymentAsync(TransactionRequestDto request)
+    public async Task<TransactionResponseDto> ProcessPaymentAsync(Guid userId, TransactionRequestDto request)
     {
-        if (request.Amount <= 0)
-        {
-            return new TransactionResponseDto { IsSuccess = false, Message = "El monto debe ser mayor a cero." };
-        }
-
         if (!IsValidLuhn(request.CardNumber))
         {
             return new TransactionResponseDto { IsSuccess = false, Message = "Número de tarjeta inválido." };
         }
 
         await Task.Delay(1500);
+
+        var walletUpdated = await walletIntegrationService.AddFundsAsync(userId, request.Amount);
+
+        if (!walletUpdated)
+        {
+            return new TransactionResponseDto { IsSuccess = false, Message = "Transacción aprobada, pero falló la sincronización con la billetera." };
+        }
 
         return new TransactionResponseDto
         {
@@ -31,7 +33,7 @@ public class TransactionService : ITransactionService
     }
 
     /// <summary>
-    // Valida un número de tarjeta de crédito o débito utilizando el algoritmo de Luhn.
+    /// Valida un número de tarjeta de crédito o débito utilizando el algoritmo de Luhn.
     /// </summary>
     private bool IsValidLuhn(string cardNumber)
     {
@@ -57,5 +59,37 @@ public class TransactionService : ITransactionService
         }
 
         return (sum % 10 == 0);
+    }
+
+    /// <summary>
+    /// Procesa el pago inicial de Q20.00 validando la tarjeta ingresada y emite la orden S2S para inicializar la billetera con viajes de cortesía.
+    /// </summary>
+    public async Task<TransactionResponseDto> PurchaseCardAsync(Guid userId, TransactionRequestDto request)
+    {
+        if (request.Amount != 20.00m)
+        {
+            return new TransactionResponseDto { IsSuccess = false, Message = "El costo de emisión de la Tarjeta Ciudadana es exactamente Q20.00." };
+        }
+
+        if (!IsValidLuhn(request.CardNumber))
+        {
+            return new TransactionResponseDto { IsSuccess = false, Message = "Número de tarjeta inválido." };
+        }
+
+        await Task.Delay(1500);
+
+        var walletInitialized = await walletIntegrationService.InitializeWalletAsync(userId);
+
+        if (!walletInitialized)
+        {
+            return new TransactionResponseDto { IsSuccess = false, Message = "Transacción aprobada, pero falló la creación de la billetera. Contacte soporte." };
+        }
+
+        return new TransactionResponseDto
+        {
+            IsSuccess = true,
+            Message = "Tarjeta Ciudadana adquirida exitosamente. Se han acreditado 5 viajes de cortesía.",
+            TransactionId = Guid.NewGuid().ToString()
+        };
     }
 }

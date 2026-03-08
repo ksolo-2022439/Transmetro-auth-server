@@ -15,6 +15,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using TransmetroConecta.Auth.API.Filters;
 using TransmetroConecta.Auth.Application.Validators;
+using TransmetroConecta.Auth.Infrastructure.Integration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +65,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddHttpClient<IWalletIntegrationService, WalletIntegrationService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["WalletService:BaseUrl"] ?? "http://localhost:3002");
+});
+
+builder.Services.AddHttpClient<IWalletIntegrationService, WalletIntegrationService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["WalletService:BaseUrl"] ?? "http://localhost:3002");
+    client.DefaultRequestHeaders.Add("x-internal-secret", "SuperSecretS2S_Transmetro2026");
+});
+
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -78,6 +90,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.ApplyPendingMigrations();
+await app.ApplyPendingMigrationsAsync();
 
 app.Run();

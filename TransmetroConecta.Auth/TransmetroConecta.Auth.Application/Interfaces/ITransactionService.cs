@@ -5,7 +5,8 @@ namespace TransmetroConecta.Auth.Application.Interfaces;
 public interface ITransactionService
 {
     /// <summary>
-    // Procesa una transacción simulada validando la tarjeta mediante el algoritmo de Luhn y retorna el resultado de la operación.
+    /// Procesa una transacción simulada validando la tarjeta y acredita los fondos.
     /// </summary>
-    Task<TransactionResponseDto> ProcessPaymentAsync(TransactionRequestDto request);
+    Task<TransactionResponseDto> ProcessPaymentAsync(Guid userId, TransactionRequestDto request);
+    Task<TransactionResponseDto> PurchaseCardAsync(Guid userId, TransactionRequestDto request);
 }

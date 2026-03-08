@@ -15,4 +15,11 @@ public interface IAuthService
     Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
     Task<string> RequestPasswordResetAsync(PasswordRecoveryDto request);
     Task ResetPasswordAsync(PasswordResetDto request);
+
+    // Agrega este método a la interfaz existente
+    /// <summary>
+    /// Obtiene todos los usuarios del sistema mapeados a un formato seguro de transferencia de datos.
+    /// </summary>
+    Task<IEnumerable<UserResponseDto>> GetAllUsersAsync();
+    Task<AuthResponseDto> RegisterAdminAsync(RegisterRequestDto request);
 }
