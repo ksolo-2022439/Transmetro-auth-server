@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "8decb75f-3318-464a-a051-bf9edc439e4a",
+    "_postman_id": "ba5cb105-a91e-4e05-a8c4-33e06d150a43",
     "name": "Transmetro Conecta - Ecosistema Completo",
     "description": "Colección maestra con variables de entorno automatizadas para orquestar Auth-Server, Server-Admin y Server-Client.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "52435973",
-    "_collection_link": "https://go.postman.co/collection/52435973-8decb75f-3318-464a-a051-bf9edc439e4a?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/52435973-ba5cb105-a91e-4e05-a8c4-33e06d150a43?source=collection_link"
   },
   "item": [
     {
@@ -125,6 +125,51 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"CUI\": \"1234567890123\",\n  \"Password\": \"MiPasswordSeguro123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrlAuth}}/api/auth/login",
+                  "host": [
+                    "{{baseUrlAuth}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Iniciar Sesión (ADMIN)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"jwt_token\", jsonData.token);",
+                      "    pm.collectionVariables.set(\"user_id\", jsonData.userId);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"CUI\": \"0000000000000\",\n  \"Password\": \"AdminTransmetro2026!\"\n}"
                 },
                 "url": {
                   "raw": "{{baseUrlAuth}}/api/auth/login",
@@ -475,6 +520,114 @@
           ]
         },
         {
+          "name": "Alertas Operativas",
+          "item": [
+            {
+              "name": "Crear Alerta",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "token",
+                    "value": "{{jwt_token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Manifestación en Zona 1\",\n  \"description\": \"Retrasos considerables en la Línea 1 debido a bloqueos cerca del Centro Cívico.\",\n  \"typeAlert\": \"INCIDENT\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrlAdmin}}/alerts",
+                  "host": [
+                    "{{baseUrlAdmin}}"
+                  ],
+                  "path": [
+                    "alerts"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Listar Alertas Activas",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    var jsonData = pm.response.json();",
+                      "    if (jsonData.data && jsonData.data.length > 0) {",
+                      "        pm.collectionVariables.set(\"alert_id\", jsonData.data[0]._id);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "token",
+                    "value": "{{jwt_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrlAdmin}}/alerts",
+                  "host": [
+                    "{{baseUrlAdmin}}"
+                  ],
+                  "path": [
+                    "alerts"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Resolver Alerta",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "token",
+                    "value": "{{jwt_token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"RESOLVED\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrlAdmin}}/alerts/{{alert_id}}/status",
+                  "host": [
+                    "{{baseUrlAdmin}}"
+                  ],
+                  "path": [
+                    "alerts",
+                    "{{alert_id}}",
+                    "status"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
           "name": "Rutas",
           "item": [
             {
@@ -651,7 +804,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"userId\": {{user_id}}\r\n}",
+                  "raw": "{\r\n  \"userId\": \"{{user_id}}\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -733,7 +886,7 @@
           "name": "Viajes (Tours)",
           "item": [
             {
-              "name": "Pagar Viaje / Descontar Saldo",
+              "name": "Planear y Pagar Viaje",
               "request": {
                 "method": "POST",
                 "header": [
@@ -749,16 +902,16 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"serviceType\": \"NORMAL\"\n}"
+                  "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"originLat\": 14.634915,\n  \"originLon\": -90.532818,\n  \"destLat\": 14.610500,\n  \"destLon\": -90.525000\n}"
                 },
                 "url": {
-                  "raw": "{{baseUrlClient}}/tours/pay",
+                  "raw": "{{baseUrlClient}}/tours/plan",
                   "host": [
                     "{{baseUrlClient}}"
                   ],
                   "path": [
                     "tours",
-                    "pay"
+                    "plan"
                   ]
                 }
               },
@@ -825,6 +978,10 @@
     },
     {
       "key": "user_id",
+      "value": ""
+    },
+    {
+      "key": "alert_id",
       "value": ""
     }
   ]
