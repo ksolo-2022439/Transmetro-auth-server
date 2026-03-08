@@ -32,4 +32,26 @@ public class TransactionController(ITransactionService transactionService) : Con
         
         return Ok(result);
     }
+
+    /// <summary>
+    /// Expone el endpoint protegido para la compra inicial de la Tarjeta Ciudadana.
+    /// </summary>
+    [HttpPost("purchase-card")]
+    public async Task<IActionResult> PurchaseCard([FromBody] TransactionRequestDto request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Token inválido o usuario no identificado." });
+        }
+
+        var result = await transactionService.PurchaseCardAsync(userId, request);
+        
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
+        }
+        
+        return Ok(result);
+    }
 }

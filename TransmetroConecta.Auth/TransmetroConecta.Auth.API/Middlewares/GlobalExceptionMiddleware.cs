@@ -6,7 +6,7 @@ namespace TransmetroConecta.Auth.API.Middlewares;
 public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
 {
     /// <summary>
-    // Intercepta la petición HTTP para capturar excepciones globales y devolver una respuesta estructurada en formato JSON.
+    /// Intercepta la petición HTTP para capturar excepciones globales y devolver una respuesta estructurada en formato JSON.
     /// </summary>
     public async Task InvokeAsync(HttpContext context)
     {
@@ -22,7 +22,7 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
     }
 
     /// <summary>
-    // Procesa la excepción capturada asignando el código de estado HTTP correspondiente y escribiendo el mensaje de error.
+    /// Procesa la excepción capturada asignando el código de estado HTTP correspondiente y escribiendo el mensaje de error.
     /// </summary>
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
